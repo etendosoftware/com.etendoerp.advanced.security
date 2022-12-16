@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE AD_SYSTEM_INFO">
+    <table name="AD_SYSTEM_INFO" primaryKey="AD_SYSTEM_INFO_KEY">
+      <column name="EM_EAS_ENABLE_PASS_ATTBLOCK" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_EAS_PASSWORD_ATTEMPTS" primaryKey="false" required="true" type="DECIMAL" autoIncrement="false">
+        <default><![CDATA[3]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_EAS_ENABLE_SESSION_CHECK" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_EAS_ENABLE_PASS_HIST" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+    </table>
+  </database>
