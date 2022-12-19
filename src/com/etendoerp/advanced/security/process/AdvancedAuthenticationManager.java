@@ -21,8 +21,6 @@ package com.etendoerp.advanced.security.process;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,14 +32,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.criterion.Restrictions;
 import org.openbravo.authentication.AuthenticationException;
 import org.openbravo.authentication.basic.DefaultAuthenticationManager;
 import org.openbravo.base.exception.OBException;
 import org.openbravo.base.secureApp.LoginUtils;
 import org.openbravo.base.secureApp.VariablesSecureApp;
 import org.openbravo.dal.core.OBContext;
-import org.openbravo.dal.service.OBCriteria;
 import org.openbravo.dal.service.OBDal;
 import org.openbravo.dal.service.OBQuery;
 import org.openbravo.database.ConnectionProvider;
@@ -52,6 +48,8 @@ import org.openbravo.model.ad.access.User;
 import org.openbravo.model.ad.system.SystemInformation;
 import org.openbravo.service.db.DalConnectionProvider;
 import org.openbravo.service.web.BaseWebServiceServlet;
+
+import com.etendoerp.advanced.security.process.utils.AdvancedSecurityUtils;
 
 public class AdvancedAuthenticationManager extends DefaultAuthenticationManager {
 
@@ -64,13 +62,16 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
     try {
       OBContext.setAdminMode(true);
       final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
-      var user = getUser(getUserNameByRequest(request));
-      if (user != null) {
+      var user = AdvancedSecurityUtils.getUser(getUserNameByRequest(request));
+      if (user != null && !StringUtils.equals(SYSTEM_USER_ID, user.getId())) {
         if (systemInfo.isEasEnableSessionCheck()) {
           checkActiveUserSessions(request, response, user);
         }
         if (systemInfo.isEasEnablePassAttblock()) {
           executePasswordSecurity(user, systemInfo, request);
+        }
+        if (systemInfo.isEasEnablepassExpiration()) {
+          executePasswordAutoExpiration(user, systemInfo);
         }
       }
     } catch (OBException e) {
@@ -86,6 +87,22 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
   }
 
   /**
+   * Update the user by setting the password as expired if proceeded.
+   *
+   * @param user The user of the user to check if the password is expired
+   * @param systemInfo Unique ad_system_info data
+   */
+  private void executePasswordAutoExpiration(User user, SystemInformation systemInfo) {
+    final Date passwordLastUpdate = user.getLastPasswordUpdate();
+    final Date dateLimitToExpire = AdvancedSecurityUtils.getDateLimitToExpire(passwordLastUpdate,
+        systemInfo);
+    if (dateLimitToExpire.compareTo(new Date()) < 0) {
+      user.setPasswordExpired(true);
+      OBDal.getInstance().save(user);
+    }
+  }
+
+  /**
    * Checks the number attempts to the password from user
    *
    * @param user
@@ -95,7 +112,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
    */
   public void executePasswordSecurity(User user, SystemInformation systemInfo, HttpServletRequest request) {
     try {
-      if (!StringUtils.equals(SYSTEM_USER_ID, user.getId()) && !user.isLocked()) {
+      if (!user.isLocked()) {
         ConnectionProvider cp = new DalConnectionProvider(false);
         final String pass = getPassFromRequest(request);
         final boolean isFailedAttempt = LoginUtils.checkUserPassword(cp, user.getUsername(), pass) == null;
@@ -161,18 +178,6 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
     return pass;
   }
 
-  private static User getUser(String userName) {
-    OBCriteria<User> currentUserCriteria = OBDal.getInstance().createCriteria(User.class);
-    currentUserCriteria.setMaxResults(1);
-    if (!StringUtils.isEmpty(userName)) {
-      currentUserCriteria.add(Restrictions.eq(User.PROPERTY_USERNAME, userName));
-    }
-    currentUserCriteria.setFilterOnReadableClients(false);
-    currentUserCriteria.setFilterOnReadableOrganization(false);
-    currentUserCriteria.setFilterOnActive(true);
-    return (User) currentUserCriteria.uniqueResult();
-  }
-
   /**
    * Verify that there is no more than one active session. In this case, throws an exception informing the user
    *
@@ -187,19 +192,17 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       User user) throws AuthenticationException, IOException, ServletException {
     try {
       final String userId = user.getId();
-      if (!StringUtils.equals(SYSTEM_USER_ID, userId)) {
-        final var oldSessions = getActiveSessions(userId);
-        if (!oldSessions.isEmpty()) {
-          if (user.isEasEnableMultSession()) {
-            super.doAuthenticate(request, response);
-            final var sessions = getActiveSessions(userId);
-            if (!oldSessions.equals(sessions)) {
-              killSessions(oldSessions);
-            }
-          } else {
-            throw new AuthenticationException(
-                String.format(OBMessageUtils.messageBD("EAS_Multiplelogin"), user.getUsername()));
+      final var oldSessions = getActiveSessions(userId);
+      if (!oldSessions.isEmpty()) {
+        if (user.isEasEnableMultSession()) {
+          super.doAuthenticate(request, response);
+          final var sessions = getActiveSessions(userId);
+          if (!oldSessions.equals(sessions)) {
+            killSessions(oldSessions);
           }
+        } else {
+          throw new AuthenticationException(
+              String.format(OBMessageUtils.messageBD("EAS_Multiplelogin"), user.getUsername()));
         }
       }
     } catch (OBException e) {

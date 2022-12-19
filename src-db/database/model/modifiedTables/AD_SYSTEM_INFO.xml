@@ -17,5 +17,17 @@
         <default><![CDATA[N]]></default>
         <onCreateDefault/>
       </column>
+      <column name="EM_EAS_TIMETOCHANGE_PASS" primaryKey="false" required="true" type="DECIMAL" autoIncrement="false">
+        <default><![CDATA[30]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_EAS_SHOW_EXPIRED_MSG" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[Y]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_EAS_ENABLEPASS_EXPIRATION" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[Y]]></default>
+        <onCreateDefault/>
+      </column>
     </table>
   </database>
