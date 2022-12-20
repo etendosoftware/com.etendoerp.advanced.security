@@ -1,16 +1,19 @@
-package com.etendoerp.advanced.security.process.hooks;
+package com.etendoerp.advanced.security.hooks;
 
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.openbravo.dal.service.OBDal;
 import org.openbravo.erpCommon.utility.OBError;
 import org.openbravo.erpCommon.utility.OBMessageUtils;
 import org.openbravo.model.ad.access.User;
 import org.openbravo.model.ad.system.SystemInformation;
 
-import com.etendoerp.advanced.security.process.utils.AdvancedSecurityUtils;
+import com.etendoerp.advanced.security.utils.AdvancedSecurityUtils;
 
 public class LoginHandlerHook implements org.openbravo.base.util.LoginHandlerHook {
+
+  private static final String SYSTEM_USER_ID = "100";
 
   private static final int DAYS_TO_REMEMBER = 7;
 
@@ -22,7 +25,8 @@ public class LoginHandlerHook implements org.openbravo.base.util.LoginHandlerHoo
     /* Check if the system is configured to show expired password message, the user is not null,
     and the password is near to expire */
     if (systemInfo.isEasEnablepassExpiration() && systemInfo.isEasShowExpiredMsg() && user != null
-        && isPasswordNearToExpire(user.getLastPasswordUpdate(), systemInfo)) {
+        && !StringUtils.equals(SYSTEM_USER_ID, user.getId()) &&
+        isPasswordNearToExpire(user.getLastPasswordUpdate(), systemInfo)) {
       OBError passwordExpiredError = new OBError();
       passwordExpiredError.setType("Warning");
       passwordExpiredError.setTitle(OBMessageUtils.messageBD("EAS_PasswordNearToExpTittle"));

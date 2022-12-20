@@ -49,7 +49,7 @@ import org.openbravo.model.ad.system.SystemInformation;
 import org.openbravo.service.db.DalConnectionProvider;
 import org.openbravo.service.web.BaseWebServiceServlet;
 
-import com.etendoerp.advanced.security.process.utils.AdvancedSecurityUtils;
+import com.etendoerp.advanced.security.utils.AdvancedSecurityUtils;
 
 public class AdvancedAuthenticationManager extends DefaultAuthenticationManager {
 
@@ -64,14 +64,14 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
       var user = AdvancedSecurityUtils.getUser(getUserNameByRequest(request));
       if (user != null && !StringUtils.equals(SYSTEM_USER_ID, user.getId())) {
-        if (systemInfo.isEasEnableSessionCheck()) {
-          checkActiveUserSessions(request, response, user);
-        }
         if (systemInfo.isEasEnablePassAttblock()) {
           executePasswordSecurity(user, systemInfo, request);
         }
         if (systemInfo.isEasEnablepassExpiration()) {
           executePasswordAutoExpiration(user, systemInfo);
+        }
+        if (systemInfo.isEasEnableSessionCheck()) {
+          checkActiveUserSessions(request, response, user);
         }
       }
     } catch (OBException e) {
