@@ -22,11 +22,11 @@ public class UserInfoWidgetHook implements org.openbravo.client.application.User
   @Override
   public OBError process(User user, String newPwd) {
     final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
-    if (systemInfo.isEasEnablePassHist() && AdvancedSecurityUtils.verifySavedPassword(
+    if (systemInfo.isEtasEnablePassHist() && AdvancedSecurityUtils.verifySavedPassword(
         AdvancedSecurityUtils.getSavedPasswordFromUser(user), newPwd)) {
       OBError error = new OBError();
       error.setType("Error");
-      error.setMessage("EAS_PasswordAlreadyUsed");
+      error.setMessage("ETAS_PasswordAlreadyUsed");
       return error;
     }
     return null;

@@ -24,19 +24,19 @@ public class LoginHandlerHook implements org.openbravo.base.util.LoginHandlerHoo
 
     /* Check if the system is configured to show expired password message, the user is not null,
     and the password is near to expire */
-    if (systemInfo.isEasEnablepassExpiration() && systemInfo.isEasShowExpiredMsg() && user != null
+    if (systemInfo.isEtasEnablepassExpiration() && systemInfo.isEtasShowExpiredMsg() && user != null
         && !StringUtils.equals(SYSTEM_USER_ID, user.getId()) &&
         isPasswordNearToExpire(user.getLastPasswordUpdate(), systemInfo)) {
       OBError passwordExpiredError = new OBError();
       passwordExpiredError.setType("Warning");
-      passwordExpiredError.setTitle(OBMessageUtils.messageBD("EAS_PasswordNearToExpTittle"));
+      passwordExpiredError.setTitle(OBMessageUtils.messageBD("ETAS_PasswordNearToExpTittle"));
       final Date dateLimitToExpire = AdvancedSecurityUtils.getDateLimitToExpire(user.getLastPasswordUpdate(),
           systemInfo);
       long timeDiff = AdvancedSecurityUtils.getDiffBetweenDateLimitAndNow(dateLimitToExpire, true);
-      String message = "EAS_PasswordNearToExp";
+      String message = "ETAS_PasswordNearToExp";
       // This case implies the difference in days = 0, therefore, it is necessary to report the amount in hours.
       if (timeDiff == 0) {
-        message = "EAS_PasswordNearToExpHour";
+        message = "ETAS_PasswordNearToExpHour";
         timeDiff = AdvancedSecurityUtils.getDiffBetweenDateLimitAndNow(dateLimitToExpire, false);
       }
       message = String.format(OBMessageUtils.messageBD(message), timeDiff);

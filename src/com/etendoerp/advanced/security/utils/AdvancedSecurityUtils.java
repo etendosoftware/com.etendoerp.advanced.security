@@ -38,7 +38,7 @@ public class AdvancedSecurityUtils {
   public static Date getDateLimitToExpire(Date lastPasswordUpdate, SystemInformation systemInfo) {
     Calendar dateLimitToExpire = Calendar.getInstance();
     dateLimitToExpire.setTime(lastPasswordUpdate);
-    dateLimitToExpire.add(Calendar.DAY_OF_WEEK, systemInfo.getEasTimetochangePass().intValue());
+    dateLimitToExpire.add(Calendar.DAY_OF_WEEK, systemInfo.getEtasTimetochangePass().intValue());
     return dateLimitToExpire.getTime();
   }
 

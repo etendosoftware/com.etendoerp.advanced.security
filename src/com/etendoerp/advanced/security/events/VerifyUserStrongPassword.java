@@ -31,11 +31,11 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
     if (!isValidEvent(event)) {
       return;
     }
-    if (isNotStrongPassword(event)) {
+    if (!isNotStrongPassword(event)) {
       throw new OBException(OBMessageUtils.messageBD("CPPasswordNotStrongEnough"));
     }
     if (isRepeatedPassword(event)) {
-      throw new OBException(OBMessageUtils.messageBD("EAS_PasswordAlreadyUsed"));
+      throw new OBException(OBMessageUtils.messageBD("ETAS_PasswordAlreadyUsed"));
     }
   }
 
@@ -58,10 +58,10 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
    */
   private boolean isRepeatedPassword(EntityUpdateEvent event) {
     final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
-    if (systemInfo.isEasEnablePassHist()) {
+    if (systemInfo.isEtasEnablePassHist()) {
       final var userEntity = ModelProvider.getInstance().getEntity(User.ENTITY_NAME);
       final var isRepeatedPassword = userEntity
-          .getProperty(User.PROPERTY_EASISUSEDPW);
+          .getProperty(User.PROPERTY_ETASISUSEDPW);
       return (boolean) event.getCurrentState(isRepeatedPassword);
     }
     return false;
@@ -77,7 +77,7 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
   private boolean isNotStrongPassword(EntityPersistenceEvent event) {
     final var userEntity = ModelProvider.getInstance().getEntity(User.ENTITY_NAME);
     final var isSecurePasswordProperty = userEntity
-        .getProperty(User.PROPERTY_EASISSECUREPW);
+        .getProperty(User.PROPERTY_ETASISSECUREPW);
     return (Boolean) event.getCurrentState(isSecurePasswordProperty);
   }
 }

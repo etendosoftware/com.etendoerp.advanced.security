@@ -1,4 +1,4 @@
-package com.etendoerp.advanced.security.callouts;
+package com.etendoerp.advanced.security.callout;
 
 import java.util.List;
 
@@ -41,11 +41,11 @@ public class VerifyStrongPassword extends SimpleCallout {
       isSecurePassword = passwordStrengthChecker.isStrongPassword(password);
     }
 
-    info.addResult("inpemEasIssecurePw", isSecurePassword ? "Y" : "N");
+    info.addResult("inpemEtasIssecurePw", isSecurePassword ? "Y" : "N");
 
     final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
     // Check if password history is enabled
-    if (!systemInfo.isEasEnablePassHist()) {
+    if (!systemInfo.isEtasEnablePassHist()) {
       return;
     }
 
@@ -56,7 +56,7 @@ public class VerifyStrongPassword extends SimpleCallout {
       List<String> savedPassword = AdvancedSecurityUtils.getSavedPasswordFromUser(user);
       // Check if the password has been used before for this user
       boolean isUsedPassword = AdvancedSecurityUtils.verifySavedPassword(savedPassword, password);
-      info.addResult("inpemEasIsusedPw", isUsedPassword ? "Y" : "N");
+      info.addResult("inpemEtasIsusedPw", isUsedPassword ? "Y" : "N");
     }
   }
 }

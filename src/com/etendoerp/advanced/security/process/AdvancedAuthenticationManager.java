@@ -64,13 +64,13 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
       var user = AdvancedSecurityUtils.getUser(getUserNameByRequest(request));
       if (user != null && !StringUtils.equals(SYSTEM_USER_ID, user.getId())) {
-        if (systemInfo.isEasEnablePassAttblock()) {
+        if (systemInfo.isEtasEnablePassAttblock()) {
           executePasswordSecurity(user, systemInfo, request);
         }
-        if (systemInfo.isEasEnablepassExpiration()) {
+        if (systemInfo.isEtasEnablepassExpiration()) {
           executePasswordAutoExpiration(user, systemInfo);
         }
-        if (systemInfo.isEasEnableSessionCheck()) {
+        if (systemInfo.isEtasEnableSessionCheck()) {
           checkActiveUserSessions(request, response, user);
         }
       }
@@ -96,7 +96,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
     final Date passwordLastUpdate = user.getLastPasswordUpdate();
     final Date dateLimitToExpire = AdvancedSecurityUtils.getDateLimitToExpire(passwordLastUpdate,
         systemInfo);
-    if (dateLimitToExpire.compareTo(new Date()) < 0) {
+    if (dateLimitToExpire.before(new Date())) {
       user.setPasswordExpired(true);
       OBDal.getInstance().save(user);
     }
@@ -118,16 +118,16 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
         final boolean isFailedAttempt = LoginUtils.checkUserPassword(cp, user.getUsername(), pass) == null;
         if (isFailedAttempt) {
           String errorMessage = OBMessageUtils.messageBD("LOCKED_USER_MSG");
-          var maxAttempts = systemInfo.getEasPasswordAttempts();
-          var userPasswordAttempts = user.getEasBadPasswordAttempts();
+          var maxAttempts = systemInfo.getEtasPasswordAttempts();
+          var userPasswordAttempts = user.getEtasBadPasswordAttempts();
           var currentAttempts = userPasswordAttempts.add(BigDecimal.ONE);
-          user.setEasBadPasswordAttempts(currentAttempts); // update incorrect attempts to user
+          user.setEtasBadPasswordAttempts(currentAttempts); // update incorrect attempts to user
 
           final boolean needLocked = maxAttempts.compareTo(currentAttempts) <= 0;
           if (needLocked) {
             user.setLocked(true);
           } else {
-            errorMessage = String.format(OBMessageUtils.messageBD("EAS_PasswordIncorrectAttempt"),
+            errorMessage = String.format(OBMessageUtils.messageBD("ETAS_PasswordIncorrectAttempt"),
                 maxAttempts.subtract(currentAttempts)); // returns available password attempts
           }
           OBDal.getInstance().save(user);
@@ -150,8 +150,8 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
    */
   private void cleanUserPasswordAttempts(User user) {
     if (user != null && BigDecimal.ZERO.compareTo(
-        user.getEasBadPasswordAttempts()) < 0) { // restart password attempts
-      user.setEasBadPasswordAttempts(BigDecimal.ZERO);
+        user.getEtasBadPasswordAttempts()) < 0) { // restart password attempts
+      user.setEtasBadPasswordAttempts(BigDecimal.ZERO);
       OBDal.getInstance().save(user);
       OBDal.getInstance().flush();
     }
@@ -194,7 +194,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       final String userId = user.getId();
       final var oldSessions = getActiveSessions(userId);
       if (!oldSessions.isEmpty()) {
-        if (user.isEasEnableMultSession()) {
+        if (user.isEtasEnableMultSession()) {
           super.doAuthenticate(request, response);
           final var sessions = getActiveSessions(userId);
           if (!oldSessions.equals(sessions)) {
@@ -202,7 +202,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
           }
         } else {
           throw new AuthenticationException(
-              String.format(OBMessageUtils.messageBD("EAS_Multiplelogin"), user.getUsername()));
+              String.format(OBMessageUtils.messageBD("ETAS_Multiplelogin"), user.getUsername()));
         }
       }
     } catch (OBException e) {
@@ -218,7 +218,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
   private List<String> getActiveSessions(String sUserId) {
     try {
       final String hqlActiveSessions = "WHERE sessionActive = true" +
-          " AND createdBy.id = :userId AND lastPing IS NOT NULL order by id";
+          " AND createdBy.id = :userId AND lastPing IS NOT NULL";
       final OBQuery<Session> queryActiveSessions = OBDal.getInstance().createQuery(Session.class, hqlActiveSessions);
       queryActiveSessions.setNamedParameter("userId", sUserId);
       var activeSessions = queryActiveSessions.list();
