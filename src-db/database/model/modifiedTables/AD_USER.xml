@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE AD_USER">
+    <table name="AD_USER" primaryKey="AD_USER_KEY">
+      <column name="EM_ETAS_BAD_PASSWORD_ATTEMPTS" primaryKey="false" required="true" type="DECIMAL" autoIncrement="false">
+        <default><![CDATA[0]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_ETAS_ENABLE_MULT_SESSION" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_ETAS_ISSECURE_PW" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_ETAS_ISUSED_PW" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <check name="EM_ETAS_ENABLE_MULT_SESSION"><![CDATA[EM_ETAS_ENABLE_MULT_SESSION IN ('Y', 'N')]]></check>
+      <check name="EM_ETAS_ISSECURE_PW"><![CDATA[EM_ETAS_ISSECURE_PW IN ('Y', 'N')]]></check>
+      <check name="EM_ETAS_ISUSED_PW"><![CDATA[EM_ETAS_ISUSED_PW IN ('Y', 'N')]]></check>
+    </table>
+  </database>
