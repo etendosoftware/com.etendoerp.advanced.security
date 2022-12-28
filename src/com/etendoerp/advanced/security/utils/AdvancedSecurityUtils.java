@@ -6,12 +6,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.criterion.Restrictions;
 import org.openbravo.authentication.hashing.PasswordHash;
+import org.openbravo.base.session.OBPropertiesProvider;
+import org.openbravo.dal.core.OBContext;
 import org.openbravo.dal.service.OBCriteria;
 import org.openbravo.dal.service.OBDal;
+import org.openbravo.erpCommon.businessUtility.Preferences;
+import org.openbravo.erpCommon.utility.PropertyException;
 import org.openbravo.model.ad.access.User;
-import org.openbravo.model.ad.system.SystemInformation;
 
 import com.etendoerp.advanced.security.data.UserPassword;
 
@@ -31,14 +35,17 @@ public class AdvancedSecurityUtils {
   }
 
   /**
-   * @param lastPasswordUpdate Date of last password update
-   * @param systemInfo Unique ad_system_info configuration
+   * @param lastPasswordUpdate
+   *     Date of last password update
+   * @param daysToExpirePassword
+   *     Number of days for password to expire
    * @return Password expiration deadline
    */
-  public static Date getDateLimitToExpire(Date lastPasswordUpdate, SystemInformation systemInfo) {
+  public static Date getDateLimitToExpire(Date lastPasswordUpdate, String daysToExpirePassword) {
+    final int daysToExpirePasswordInt = Integer.parseInt(daysToExpirePassword);
     Calendar dateLimitToExpire = Calendar.getInstance();
     dateLimitToExpire.setTime(lastPasswordUpdate);
-    dateLimitToExpire.add(Calendar.DAY_OF_WEEK, systemInfo.getEtasTimetochangePass().intValue());
+    dateLimitToExpire.add(Calendar.DAY_OF_WEEK, daysToExpirePasswordInt);
     return dateLimitToExpire.getTime();
   }
 
@@ -88,4 +95,32 @@ public class AdvancedSecurityUtils {
     }
     return savedPasswordStr;
   }
+
+  /**
+   * Returns the value of the preference "ETAS_DaysToPasswordExpiration" for the given user.
+   *
+   * @param user the user for whom the preference value should be retrieved
+   * @return the value of the preference "ETAS_DaysToPasswordExpiration"
+   * @throws PropertyException if there is an error retrieving the preference value
+   */
+  public static String getDaysToPasswordExpirationPreference(User user) throws PropertyException {
+    try {
+      OBContext.setOBContext(user.getId()); // necessary to get user context (current context is System)
+      return Preferences.getPreferenceValue("ETAS_DaysToPasswordExpiration",
+          true, user.getDefaultClient(), user.getDefaultOrganization(), user,
+          user.getDefaultRole(), null).trim();
+    } finally {
+      OBContext.restorePreviousMode();
+    }
+  }
+
+  public static int getAttemptsToBlockUser() {
+    int defaultValue = 0;
+    final String userLockAttempts = OBPropertiesProvider.getInstance().getOpenbravoProperties().getProperty("login.trial.user.lock");
+    if (!StringUtils.isEmpty(userLockAttempts)) {
+      return Integer.parseInt(userLockAttempts);
+    }
+    return defaultValue;
+  }
+
 }

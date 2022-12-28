@@ -64,17 +64,17 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
       var user = AdvancedSecurityUtils.getUser(getUserNameByRequest(request));
       if (user != null && !StringUtils.equals(SYSTEM_USER_ID, user.getId())) {
-        if (systemInfo.isEtasEnablePassAttblock()) {
-          executePasswordSecurity(user, systemInfo, request);
+        var attemptsToBlockUser = AdvancedSecurityUtils.getAttemptsToBlockUser();
+        if (attemptsToBlockUser > 0) {
+          executePasswordSecurity(user, request, attemptsToBlockUser);
         }
-        if (systemInfo.isEtasEnablepassExpiration()) {
-          executePasswordAutoExpiration(user, systemInfo);
-        }
+        final var daysToExpirePassword = AdvancedSecurityUtils.getDaysToPasswordExpirationPreference(user);
+        executePasswordAutoExpiration(user, daysToExpirePassword);
         if (systemInfo.isEtasEnableSessionCheck()) {
           checkActiveUserSessions(request, response, user);
         }
       }
-    } catch (OBException e) {
+    } catch (Exception e) {
       OBError errorMsg = new OBError();
       errorMsg.setType("error");
       errorMsg.setTitle(e.getMessage());
@@ -89,13 +89,14 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
   /**
    * Update the user by setting the password as expired if proceeded.
    *
-   * @param user The user of the user to check if the password is expired
-   * @param systemInfo Unique ad_system_info data
+   * @param user
+   *     The user of the user to check if the password is expired
+   * @param daysToExpirePassword
+   *     Number of days for password to expire
    */
-  private void executePasswordAutoExpiration(User user, SystemInformation systemInfo) {
+  private void executePasswordAutoExpiration(User user, String daysToExpirePassword) {
     final Date passwordLastUpdate = user.getLastPasswordUpdate();
-    final Date dateLimitToExpire = AdvancedSecurityUtils.getDateLimitToExpire(passwordLastUpdate,
-        systemInfo);
+    final Date dateLimitToExpire = AdvancedSecurityUtils.getDateLimitToExpire(passwordLastUpdate, daysToExpirePassword);
     if (dateLimitToExpire.before(new Date())) {
       user.setPasswordExpired(true);
       OBDal.getInstance().save(user);
@@ -107,28 +108,29 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
    *
    * @param user
    *     The user of the user to check password attempts
-   * @param systemInfo
-   *     Unique ad_system_info data
+   * @param attemptsToBlockUser
+   *     Numbers of available password attempts
    */
-  public void executePasswordSecurity(User user, SystemInformation systemInfo, HttpServletRequest request) {
+  public void executePasswordSecurity(User user, HttpServletRequest request,
+      int attemptsToBlockUser) {
     try {
       if (!user.isLocked()) {
+        final BigDecimal parsedMaxAttempts = new BigDecimal(attemptsToBlockUser);
         ConnectionProvider cp = new DalConnectionProvider(false);
         final String pass = getPassFromRequest(request);
         final boolean isFailedAttempt = LoginUtils.checkUserPassword(cp, user.getUsername(), pass) == null;
         if (isFailedAttempt) {
           String errorMessage = OBMessageUtils.messageBD("LOCKED_USER_MSG");
-          var maxAttempts = systemInfo.getEtasPasswordAttempts();
           var userPasswordAttempts = user.getEtasBadPasswordAttempts();
           var currentAttempts = userPasswordAttempts.add(BigDecimal.ONE);
           user.setEtasBadPasswordAttempts(currentAttempts); // update incorrect attempts to user
 
-          final boolean needLocked = maxAttempts.compareTo(currentAttempts) <= 0;
+          final boolean needLocked = parsedMaxAttempts.compareTo(currentAttempts) <= 0;
           if (needLocked) {
             user.setLocked(true);
           } else {
             errorMessage = String.format(OBMessageUtils.messageBD("ETAS_PasswordIncorrectAttempt"),
-                maxAttempts.subtract(currentAttempts)); // returns available password attempts
+                parsedMaxAttempts.subtract(currentAttempts)); // returns available password attempts
           }
           OBDal.getInstance().save(user);
           OBDal.getInstance().flush();

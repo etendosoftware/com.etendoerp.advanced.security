@@ -1,14 +1,6 @@
 <?xml version="1.0"?>
   <database name="MODIFIED TABLE AD_SYSTEM_INFO">
     <table name="AD_SYSTEM_INFO" primaryKey="AD_SYSTEM_INFO_KEY">
-      <column name="EM_ETAS_ENABLE_PASS_ATTBLOCK" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
-        <default><![CDATA[Y]]></default>
-        <onCreateDefault/>
-      </column>
-      <column name="EM_ETAS_PASSWORD_ATTEMPTS" primaryKey="false" required="true" type="DECIMAL" autoIncrement="false">
-        <default><![CDATA[3]]></default>
-        <onCreateDefault/>
-      </column>
       <column name="EM_ETAS_ENABLE_SESSION_CHECK" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
         <default><![CDATA[Y]]></default>
         <onCreateDefault/>
@@ -17,22 +9,12 @@
         <default><![CDATA[Y]]></default>
         <onCreateDefault/>
       </column>
-      <column name="EM_ETAS_TIMETOCHANGE_PASS" primaryKey="false" required="true" type="DECIMAL" autoIncrement="false">
-        <default><![CDATA[30]]></default>
-        <onCreateDefault/>
-      </column>
       <column name="EM_ETAS_SHOW_EXPIRED_MSG" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
         <default><![CDATA[Y]]></default>
         <onCreateDefault/>
       </column>
-      <column name="EM_ETAS_ENABLEPASS_EXPIRATION" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
-        <default><![CDATA[Y]]></default>
-        <onCreateDefault/>
-      </column>
-      <check name="EM_ETAS_ENABLE_PASS_ATTBLOCK"><![CDATA[EM_ETAS_ENABLE_PASS_ATTBLOCK IN ('Y', 'N')]]></check>
       <check name="EM_ETAS_ENABLE_PASS_HIST"><![CDATA[EM_ETAS_ENABLE_PASS_HIST IN ('Y', 'N')]]></check>
       <check name="EM_ETAS_ENABLE_SESSION_CHECK"><![CDATA[EM_ETAS_ENABLE_SESSION_CHECK IN ('Y', 'N')]]></check>
-      <check name="EM_ETAS_ENABLEPASS_EXPIRATION"><![CDATA[EM_ETAS_ENABLEPASS_EXPIRATION IN ('Y', 'N')]]></check>
       <check name="EM_ETAS_SHOW_EXPIRED_MSG"><![CDATA[EM_ETAS_SHOW_EXPIRED_MSG IN ('Y', 'N')]]></check>
     </table>
   </database>
