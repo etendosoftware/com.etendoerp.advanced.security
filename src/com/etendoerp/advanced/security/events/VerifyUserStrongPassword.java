@@ -43,7 +43,7 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
     if (!isValidEvent(event)) {
       return;
     }
-    if (isNotStrongPassword(event)) {
+    if (!isNotStrongPassword(event)) {
       throw new OBException(OBMessageUtils.messageBD("CPPasswordNotStrongEnough"));
     }
   }
