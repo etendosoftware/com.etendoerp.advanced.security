@@ -17,7 +17,12 @@
         <default><![CDATA[N]]></default>
         <onCreateDefault/>
       </column>
+      <column name="EM_ETAS_ISNEWUSER" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
       <check name="EM_ETAS_ENABLE_MULT_SESSION"><![CDATA[EM_ETAS_ENABLE_MULT_SESSION IN ('Y', 'N')]]></check>
+      <check name="EM_ETAS_ISNEWUSER"><![CDATA[EM_ETAS_ISNEWUSER IN ('Y', 'N')]]></check>
       <check name="EM_ETAS_ISSECURE_PW"><![CDATA[EM_ETAS_ISSECURE_PW IN ('Y', 'N')]]></check>
       <check name="EM_ETAS_ISUSED_PW"><![CDATA[EM_ETAS_ISUSED_PW IN ('Y', 'N')]]></check>
     </table>
