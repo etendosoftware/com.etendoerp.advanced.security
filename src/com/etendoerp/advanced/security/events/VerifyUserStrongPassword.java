@@ -78,11 +78,11 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
     final var userEntity = ModelProvider.getInstance().getEntity(User.ENTITY_NAME);
     final var isExpiredPassword = userEntity
         .getProperty(User.PROPERTY_ISPASSWORDEXPIRED);
-    if (!(Boolean) event.getCurrentState(
+    if (!(boolean) event.getCurrentState(
         isExpiredPassword)) {
       final var isSecurePasswordProperty = userEntity
           .getProperty(User.PROPERTY_ETASISSECUREPW);
-      return (Boolean) event.getCurrentState(isSecurePasswordProperty);
+      return (boolean) event.getCurrentState(isSecurePasswordProperty);
     }
     return true;
   }
