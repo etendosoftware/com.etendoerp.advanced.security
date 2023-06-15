@@ -6,10 +6,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.StringUtils;
 import org.hibernate.criterion.Restrictions;
 import org.openbravo.authentication.hashing.PasswordHash;
-import org.openbravo.base.session.OBPropertiesProvider;
+import org.openbravo.base.exception.OBException;
 import org.openbravo.dal.core.OBContext;
 import org.openbravo.dal.service.OBCriteria;
 import org.openbravo.dal.service.OBDal;
@@ -114,13 +113,14 @@ public class AdvancedSecurityUtils {
     }
   }
 
-  public static int getAttemptsToBlockUser() {
-    int defaultValue = 0;
-    final String userLockAttempts = OBPropertiesProvider.getInstance().getOpenbravoProperties().getProperty("login.trial.user.lock");
-    if (!StringUtils.isEmpty(userLockAttempts)) {
-      return Integer.parseInt(userLockAttempts);
+  public static int getAttemptsToBlockUser(User user) {
+    try {
+      return Integer.parseInt(Preferences.getPreferenceValue("ETAS_MaxPasswordAttempts",
+          true, user.getDefaultClient(), user.getDefaultOrganization(), user,
+          user.getDefaultRole(), null));
+    } catch (Exception e) {
+      throw new OBException(e.getMessage());
     }
-    return defaultValue;
   }
 
 }

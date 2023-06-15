@@ -64,7 +64,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
       var user = AdvancedSecurityUtils.getUser(getUserNameByRequest(request));
       if (user != null && !StringUtils.equals(SYSTEM_USER_ID, user.getId())) {
-        var attemptsToBlockUser = AdvancedSecurityUtils.getAttemptsToBlockUser();
+        var attemptsToBlockUser = AdvancedSecurityUtils.getAttemptsToBlockUser(user);
         if (attemptsToBlockUser > 0) {
           executePasswordSecurity(user, request, attemptsToBlockUser);
         }
