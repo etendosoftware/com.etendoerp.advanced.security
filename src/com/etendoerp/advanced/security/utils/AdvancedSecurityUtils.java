@@ -49,8 +49,10 @@ public class AdvancedSecurityUtils {
   }
 
   /**
-   * @param dateLimitToExpire Password expiration deadline
-   * @param inDays true if the difference in days is desired, otherwise in hours.
+   * @param dateLimitToExpire
+   *     Password expiration deadline
+   * @param inDays
+   *     true if the difference in days is desired, otherwise in hours.
    * @return Difference in days (or hours) between the current date and the password change deadline.
    */
   public static long getDiffBetweenDateLimitAndNow(Date dateLimitToExpire, boolean inDays) {
@@ -62,8 +64,10 @@ public class AdvancedSecurityUtils {
   /**
    * Verify if the password entered has not been used in the user's password history.
    *
-   * @param savedPasswords List of saved password from current user
-   * @param newPwd New password to verify
+   * @param savedPasswords
+   *     List of saved password from current user
+   * @param newPwd
+   *     New password to verify
    * @return True when list of saved passwords contains new password, otherwise, false.
    */
   public static boolean verifySavedPassword(List<String> savedPasswords, String newPwd) {
@@ -78,7 +82,8 @@ public class AdvancedSecurityUtils {
   /**
    * Retrieves the user's saved password history
    *
-   * @param user Current User
+   * @param user
+   *     Current User
    * @return User password history
    */
   public static List<String> getSavedPasswordFromUser(User user) {
@@ -98,9 +103,11 @@ public class AdvancedSecurityUtils {
   /**
    * Returns the value of the preference "ETAS_DaysToPasswordExpiration" for the given user.
    *
-   * @param user the user for whom the preference value should be retrieved
+   * @param user
+   *     the user for whom the preference value should be retrieved
    * @return the value of the preference "ETAS_DaysToPasswordExpiration"
-   * @throws PropertyException if there is an error retrieving the preference value
+   * @throws PropertyException
+   *     if there is an error retrieving the preference value
    */
   public static String getDaysToPasswordExpirationPreference(User user) throws PropertyException {
     try {
@@ -115,9 +122,10 @@ public class AdvancedSecurityUtils {
 
   public static int getAttemptsToBlockUser(User user) {
     try {
+      OBContext.setOBContext(user.getId()); // necessary to get user context (current context is System)
       return Integer.parseInt(Preferences.getPreferenceValue("ETAS_MaxPasswordAttempts",
-          true, user.getDefaultClient(), user.getDefaultOrganization(), user,
-          user.getDefaultRole(), null));
+          true, OBContext.getOBContext().getCurrentClient(), OBContext.getOBContext().getCurrentOrganization(), user,
+          OBContext.getOBContext().getRole(), null));
     } catch (Exception e) {
       throw new OBException(e.getMessage());
     }
