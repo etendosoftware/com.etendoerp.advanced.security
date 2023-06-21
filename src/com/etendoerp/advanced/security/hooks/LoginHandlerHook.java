@@ -11,7 +11,7 @@ import org.openbravo.model.ad.system.SystemInformation;
 
 import com.etendoerp.advanced.security.utils.AdvancedSecurityUtils;
 
-public class LoginHandlerHook implements org.openbravo.base.util.LoginHandlerHook {
+public class LoginHandlerHook implements org.openbravo.base.secureApp.LoginHandlerHook {
 
   private static final String SYSTEM_USER_ID = "100";
 
