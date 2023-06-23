@@ -73,6 +73,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
         if (systemInfo.isEtasEnableSessionCheck()) {
           checkActiveUserSessions(request, response, user);
         }
+        executePasswordResetForNewUsers(user);
       }
     } catch (Exception e) {
       OBError errorMsg = new OBError();
@@ -84,6 +85,23 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       OBContext.restorePreviousMode();
     }
     return super.doAuthenticate(request, response);
+  }
+
+  /**
+   * If the user is marked as a new user, it is necessary to reset the password.
+   *
+   * @param user
+   *     The user to check if is necessary to reset the password.
+   */
+  private void executePasswordResetForNewUsers(User user) {
+    try {
+      if (user.isEtasIsNewUser()) {
+        user.setPasswordExpired(true);  
+        user.setEtasIsNewUser(false);
+      }
+    } catch (Exception e) {
+      throw new OBException(e.getMessage());
+    }
   }
 
   /**
