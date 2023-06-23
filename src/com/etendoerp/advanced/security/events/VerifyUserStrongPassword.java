@@ -31,7 +31,7 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
     if (!isValidEvent(event)) {
       return;
     }
-    if (!isNotStrongPassword(event)) {
+    if (isNotStrongPassword(event)) {
       throw new OBException(OBMessageUtils.messageBD("CPPasswordNotStrongEnough"));
     }
     if (isRepeatedPassword(event)) {
@@ -43,7 +43,7 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
     if (!isValidEvent(event)) {
       return;
     }
-    if (!isNotStrongPassword(event)) {
+    if (isNotStrongPassword(event)) {
       throw new OBException(OBMessageUtils.messageBD("CPPasswordNotStrongEnough"));
     }
   }
@@ -72,7 +72,7 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
    *
    * @param event
    *     entity persistence event.
-   * @return true if the password is strong enough, false otherwise.
+   * @return true if the password is non-strong enough, false otherwise.
    */
   private boolean isNotStrongPassword(EntityPersistenceEvent event) {
     final var userEntity = ModelProvider.getInstance().getEntity(User.ENTITY_NAME);
@@ -82,8 +82,8 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
         isExpiredPassword)) {
       final var isSecurePasswordProperty = userEntity
           .getProperty(User.PROPERTY_ETASISSECUREPW);
-      return (boolean) event.getCurrentState(isSecurePasswordProperty);
+      return !(boolean) event.getCurrentState(isSecurePasswordProperty);
     }
-    return true;
+    return false;
   }
 }
