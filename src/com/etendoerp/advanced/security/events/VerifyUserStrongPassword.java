@@ -72,7 +72,7 @@ public class VerifyUserStrongPassword extends EntityPersistenceEventObserver {
    *
    * @param event
    *     entity persistence event.
-   * @return false if the password is non-strong enough, true otherwise.
+   * @return true if the password is non-strong enough, false otherwise.
    */
   private boolean isNotStrongPassword(EntityPersistenceEvent event) {
     final var userEntity = ModelProvider.getInstance().getEntity(User.ENTITY_NAME);
