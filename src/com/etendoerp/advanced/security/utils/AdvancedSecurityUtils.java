@@ -114,8 +114,8 @@ public class AdvancedSecurityUtils {
     try {
       OBContext.setOBContext(user.getId()); // necessary to get user context (current context is System)
       return Preferences.getPreferenceValue("ETAS_DaysToPasswordExpiration",
-          true, user.getDefaultClient(), user.getDefaultOrganization(), user,
-          user.getDefaultRole(), null).trim();
+          true, OBContext.getOBContext().getCurrentClient(), OBContext.getOBContext().getCurrentOrganization(), user,
+          OBContext.getOBContext().getRole(), null).trim();
     } catch (Exception e) {
       throw new OBException(e.getMessage());
     } finally {
