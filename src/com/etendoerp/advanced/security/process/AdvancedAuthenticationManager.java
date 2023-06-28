@@ -21,7 +21,9 @@ package com.etendoerp.advanced.security.process;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,12 +34,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.criterion.Restrictions;
 import org.openbravo.authentication.AuthenticationException;
 import org.openbravo.authentication.basic.DefaultAuthenticationManager;
 import org.openbravo.base.exception.OBException;
 import org.openbravo.base.secureApp.LoginUtils;
 import org.openbravo.base.secureApp.VariablesSecureApp;
 import org.openbravo.dal.core.OBContext;
+import org.openbravo.dal.service.OBCriteria;
 import org.openbravo.dal.service.OBDal;
 import org.openbravo.dal.service.OBQuery;
 import org.openbravo.database.ConnectionProvider;
@@ -59,8 +63,13 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
   @Override
   protected String doAuthenticate(HttpServletRequest request, HttpServletResponse response)
       throws AuthenticationException, ServletException, IOException {
+    boolean changedAdminMode = false;
     try {
-      OBContext.setAdminMode(true);
+      if (!OBContext.getOBContext().isAdminContext()) {
+        OBContext.setAdminMode(true);
+        changedAdminMode = true;
+      }
+
       final SystemInformation systemInfo = OBDal.getInstance().get(SystemInformation.class, "0");
       var user = AdvancedSecurityUtils.getUser(getUserNameByRequest(request));
       if (user != null && !StringUtils.equals(SYSTEM_USER_ID, user.getId())) {
@@ -75,6 +84,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
         }
         executePasswordResetForNewUsers(user);
       }
+      return super.doAuthenticate(request, response);
     } catch (Exception e) {
       OBError errorMsg = new OBError();
       errorMsg.setType("error");
@@ -82,9 +92,10 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
       errorMsg.setMessage(" ");
       throw new AuthenticationException(errorMsg.getTitle(), errorMsg, false);
     } finally {
-      OBContext.restorePreviousMode();
+      if (changedAdminMode) {
+        OBContext.restorePreviousMode();
+      }
     }
-    return super.doAuthenticate(request, response);
   }
 
   /**
@@ -96,7 +107,7 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
   private void executePasswordResetForNewUsers(User user) {
     try {
       if (user.isEtasIsNewUser()) {
-        user.setPasswordExpired(true);  
+        user.setPasswordExpired(true);
         user.setEtasIsNewUser(false);
       }
     } catch (Exception e) {
@@ -237,6 +248,8 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
    */
   private List<String> getActiveSessions(String sUserId) {
     try {
+      deleteInactiveSessions(sUserId);
+
       final String hqlActiveSessions = "WHERE sessionActive = true" +
           " AND createdBy.id = :userId AND lastPing IS NOT NULL";
       final OBQuery<Session> queryActiveSessions = OBDal.getInstance().createQuery(Session.class, hqlActiveSessions);
@@ -248,6 +261,29 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
     } catch (Exception e) {
       throw new OBException(e.getMessage());
     }
+  }
+
+  private void deleteInactiveSessions(String sUserId) {
+    OBCriteria<Session> sessionOBCriteria = OBDal.getInstance().createCriteria(Session.class);
+    sessionOBCriteria.add(
+        Restrictions.eq(Session.PROPERTY_USERNAME, OBDal.getInstance().get(User.class, sUserId).getUsername()));
+    sessionOBCriteria.add(Restrictions.isNotNull(Session.PROPERTY_LASTPING));
+    sessionOBCriteria.add(Restrictions.eq(Session.PROPERTY_SESSIONACTIVE, true));
+    sessionOBCriteria.addOrderBy(Session.PROPERTY_CREATIONDATE, false);
+    List<Session> lastSessions = sessionOBCriteria.list();
+
+    Calendar calendar = Calendar.getInstance();
+    List<String> sessionsToKill = new LinkedList<>();
+
+    for (Session sessionObj : lastSessions) {
+      calendar.setTime(sessionObj.getLastPing());
+      calendar.add(Calendar.SECOND, 15);
+      if (calendar.getTime().before(new Date())) {
+        sessionsToKill.add(sessionObj.getId());
+      }
+    }
+
+    killSessions(sessionsToKill);
   }
 
   private String getUserNameByRequest(HttpServletRequest request) {
@@ -275,7 +311,9 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
         currentSession.setSessionActive(false);
         OBDal.getInstance().save(currentSession);
       }
-      OBDal.getInstance().flush();
+      if (!sessions.isEmpty()) {
+        OBDal.getInstance().flush();
+      }
     } catch (Exception e) {
       throw new OBException(e.getMessage());
     }

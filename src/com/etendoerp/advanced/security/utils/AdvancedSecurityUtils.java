@@ -110,6 +110,7 @@ public class AdvancedSecurityUtils {
    *     if there is an error retrieving the preference value
    */
   public static String getDaysToPasswordExpirationPreference(User user) throws PropertyException {
+    OBContext currentContext = OBContext.getOBContext();
     try {
       OBContext.setOBContext(user.getId()); // necessary to get user context (current context is System)
       return Preferences.getPreferenceValue("ETAS_DaysToPasswordExpiration",
@@ -117,10 +118,13 @@ public class AdvancedSecurityUtils {
           OBContext.getOBContext().getRole(), null).trim();
     } catch (Exception e) {
       throw new OBException(e.getMessage());
+    } finally {
+      OBContext.setOBContext(currentContext);
     }
   }
 
   public static int getAttemptsToBlockUser(User user) {
+    OBContext currentContext = OBContext.getOBContext();
     try {
       OBContext.setOBContext(user.getId()); // necessary to get user context (current context is System)
       return Integer.parseInt(Preferences.getPreferenceValue("ETAS_MaxPasswordAttempts",
@@ -128,6 +132,8 @@ public class AdvancedSecurityUtils {
           OBContext.getOBContext().getRole(), null));
     } catch (Exception e) {
       throw new OBException(e.getMessage());
+    } finally {
+      OBContext.setOBContext(currentContext);
     }
   }
 
