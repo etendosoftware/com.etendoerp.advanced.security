@@ -7,7 +7,7 @@
 */
 
 group          = "com.etendoerp"
-version        = "1.2.1"
+version        = "1.2.2"
 description    = "Etendo Advanced Security Module"
 ext.artifact   = "advanced.security"
 ext.repository = "https://maven.pkg.github.com/etendosoftware/com.etendoerp.platform.extensions"
