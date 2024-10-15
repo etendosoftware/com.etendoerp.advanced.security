@@ -67,7 +67,7 @@ definitions:
 
 pipelines:
   branches:
-    '{master,develop}':
+    '{main,develop}':
       - step: *build-step
   pull-requests:
     'develop':
