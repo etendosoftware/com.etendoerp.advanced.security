@@ -102,7 +102,7 @@ public class VerifyUserStrongPasswordMethodTest {
       isRepeatedPassword.setAccessible(true);
       boolean result = (boolean) isRepeatedPassword.invoke(verifyPassword, updateEvent);
 
-      assertTrue("La contraseña debería estar marcada como repetida", result);
+      assertTrue("The password should be marked as repeated", result);
     }
   }
 
@@ -128,7 +128,7 @@ public class VerifyUserStrongPasswordMethodTest {
       isRepeatedPassword.setAccessible(true);
       boolean result = (boolean) isRepeatedPassword.invoke(verifyPassword, updateEvent);
 
-      assertFalse("La contraseña no debería estar marcada como repetida cuando el historial está deshabilitado", result);
+      assertFalse("Password should not be marked as repeated when history is disabled", result);
     }
   }
 
@@ -158,7 +158,7 @@ public class VerifyUserStrongPasswordMethodTest {
       isNotStrongPassword.setAccessible(true);
       boolean result = (boolean) isNotStrongPassword.invoke(verifyPassword, persistenceEvent);
 
-      assertTrue("La contraseña debería estar marcada como no segura", result);
+      assertTrue("The password should be marked as not secure", result);
     }
   }
 
@@ -183,7 +183,7 @@ public class VerifyUserStrongPasswordMethodTest {
       isNotStrongPassword.setAccessible(true);
       boolean result = (boolean) isNotStrongPassword.invoke(verifyPassword, persistenceEvent);
 
-      assertFalse("La contraseña expirada no debería verificar la fortaleza", result);
+      assertFalse("Expired password should not check strength", result);
     }
   }
 
