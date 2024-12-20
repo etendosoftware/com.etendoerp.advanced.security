@@ -168,5 +168,4 @@ public class VerifyStrongPasswordTest {
       verify(mockCalloutInfo).addResult("inpemEtasIsusedPw", "Y");
     }
   }
-
 }

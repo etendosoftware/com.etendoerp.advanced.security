@@ -210,5 +210,4 @@ public class AdvancedAuthenticationManagerTest {
 
     assertEquals(Utility.TEST_USER, result);
   }
-
 }

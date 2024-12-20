@@ -33,5 +33,4 @@ public class Utility {
   public static final String INPEM_ETAS_ISSECURE_PW = "inpemEtasIssecurePw";
   public static final String INP_PASSWORD = "inppassword";
   public static final String OLD_PASSWORD = "OldPa$$w0rd2023!";
-
 }
