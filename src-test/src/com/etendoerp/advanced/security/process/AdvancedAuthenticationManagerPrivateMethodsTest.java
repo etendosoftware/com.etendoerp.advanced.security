@@ -23,11 +23,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.hibernate.criterion.Criterion;
+import org.openbravo.dal.service.Restriction;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

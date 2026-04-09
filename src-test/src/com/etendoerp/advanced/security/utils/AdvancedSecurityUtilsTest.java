@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.criterion.Criterion;
+import org.openbravo.dal.service.Restriction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

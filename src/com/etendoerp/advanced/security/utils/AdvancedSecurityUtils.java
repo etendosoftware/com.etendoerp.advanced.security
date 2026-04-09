@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.criterion.Restrictions;
+import org.openbravo.dal.service.Restrictions;
 import org.openbravo.authentication.hashing.PasswordHash;
 import org.openbravo.base.exception.OBException;
 import org.openbravo.dal.core.OBContext;
