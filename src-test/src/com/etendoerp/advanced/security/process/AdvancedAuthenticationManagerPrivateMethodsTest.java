@@ -128,7 +128,7 @@ public class AdvancedAuthenticationManagerPrivateMethodsTest {
     try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {
       obDalMock.when(OBDal::getInstance).thenReturn(obDal);
       when(obDal.createCriteria(Session.class)).thenReturn(mockCriteria);
-      when(mockCriteria.add(any(Criterion.class))).thenReturn(mockCriteria);
+      when(mockCriteria.add(any(Restriction.class))).thenReturn(mockCriteria);
       when(mockCriteria.addOrderBy(anyString(), anyBoolean())).thenReturn(mockCriteria);
       when(mockCriteria.list()).thenReturn(Arrays.asList(mockSession));
       when(obDal.get(User.class, Utility.TEST_USER_ID)).thenReturn(mockUser);
@@ -185,7 +185,7 @@ public class AdvancedAuthenticationManagerPrivateMethodsTest {
       when(obDal.get(User.class, Utility.TEST_USER_ID)).thenReturn(mockUser);
 
       when(obDal.createCriteria(Session.class)).thenReturn(mockCriteria);
-      when(mockCriteria.add(any(Criterion.class))).thenReturn(mockCriteria);
+      when(mockCriteria.add(any(Restriction.class))).thenReturn(mockCriteria);
       when(mockCriteria.addOrderBy(anyString(), anyBoolean())).thenReturn(mockCriteria);
       when(mockCriteria.list()).thenReturn(List.of());
 
@@ -216,7 +216,7 @@ public class AdvancedAuthenticationManagerPrivateMethodsTest {
       when(obDal.get(User.class, mockUser.getId())).thenReturn(mockUser);
 
       when(obDal.createCriteria(Session.class)).thenReturn(mockCriteria);
-      when(mockCriteria.add(any(Criterion.class))).thenReturn(mockCriteria);
+      when(mockCriteria.add(any(Restriction.class))).thenReturn(mockCriteria);
       when(mockCriteria.addOrderBy(anyString(), anyBoolean())).thenReturn(mockCriteria);
       when(mockCriteria.list()).thenReturn(List.of());
 
@@ -250,7 +250,7 @@ public class AdvancedAuthenticationManagerPrivateMethodsTest {
       when(obDal.get(User.class, mockUser.getId())).thenReturn(mockUser);
 
       when(obDal.createCriteria(Session.class)).thenReturn(mockCriteria);
-      when(mockCriteria.add(any(Criterion.class))).thenReturn(mockCriteria);
+      when(mockCriteria.add(any(Restriction.class))).thenReturn(mockCriteria);
       when(mockCriteria.addOrderBy(anyString(), anyBoolean())).thenReturn(mockCriteria);
       when(mockCriteria.list()).thenReturn(List.of());
 
