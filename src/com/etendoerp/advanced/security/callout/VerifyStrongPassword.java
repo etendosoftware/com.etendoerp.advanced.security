@@ -2,8 +2,8 @@ package com.etendoerp.advanced.security.callout;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.servlet.ServletException;
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.openbravo.base.weld.WeldUtils;

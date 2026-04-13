@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.criterion.Criterion;
+import org.openbravo.dal.service.Restriction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,7 +128,7 @@ public class AdvancedSecurityUtilsTest {
     String testUsername = "testUser";
     when(mockOBDal.createCriteria(User.class)).thenReturn(mockUserCriteria);
     when(mockUserCriteria.setMaxResults(1)).thenReturn(mockUserCriteria);
-    when(mockUserCriteria.add(any(Criterion.class))).thenReturn(mockUserCriteria);
+    when(mockUserCriteria.add(any(Restriction.class))).thenReturn(mockUserCriteria);
     when(mockUserCriteria.uniqueResult()).thenReturn(mockUser);
 
     User result = AdvancedSecurityUtils.getUser(testUsername);
@@ -215,7 +215,7 @@ public class AdvancedSecurityUtilsTest {
   public void testGetSavedPasswordFromUser() {
     List<UserPassword> mockPasswordList = Arrays.asList(mockUserPassword1, mockUserPassword2);
     when(mockOBDal.createCriteria(UserPassword.class)).thenReturn(mockPasswordCriteria);
-    when(mockPasswordCriteria.add(any(Criterion.class))).thenReturn(mockPasswordCriteria);
+    when(mockPasswordCriteria.add(any(Restriction.class))).thenReturn(mockPasswordCriteria);
     when(mockPasswordCriteria.list()).thenReturn(mockPasswordList);
 
     when(mockUserPassword1.getSavedPassword()).thenReturn("savedPass1");
@@ -235,7 +235,7 @@ public class AdvancedSecurityUtilsTest {
   @Test
   public void testGetSavedPasswordFromUserEmptyList() {
     when(mockOBDal.createCriteria(UserPassword.class)).thenReturn(mockPasswordCriteria);
-    when(mockPasswordCriteria.add(any(Criterion.class))).thenReturn(mockPasswordCriteria);
+    when(mockPasswordCriteria.add(any(Restriction.class))).thenReturn(mockPasswordCriteria);
     when(mockPasswordCriteria.list()).thenReturn(Collections.emptyList());
 
     List<String> result = AdvancedSecurityUtils.getSavedPasswordFromUser(mockUser);

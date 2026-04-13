@@ -19,7 +19,7 @@ import org.openbravo.model.ad.access.User;
 import org.openbravo.model.ad.system.SystemInformation;
 import org.openbravo.service.password.PasswordStrengthChecker;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.util.Arrays;
 import java.util.List;
 
