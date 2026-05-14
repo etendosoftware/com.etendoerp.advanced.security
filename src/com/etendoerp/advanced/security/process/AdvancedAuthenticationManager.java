@@ -27,14 +27,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.criterion.Restrictions;
+import org.openbravo.dal.service.Restrictions;
 import org.openbravo.authentication.AuthenticationException;
 import org.openbravo.authentication.basic.DefaultAuthenticationManager;
 import org.openbravo.base.exception.OBException;
