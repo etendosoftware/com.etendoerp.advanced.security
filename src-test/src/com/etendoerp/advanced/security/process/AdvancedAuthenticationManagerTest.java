@@ -2,8 +2,9 @@
 package com.etendoerp.advanced.security.process;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,6 +31,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openbravo.authentication.AuthenticationException;
+import org.openbravo.authentication.AuthenticationExpirationPasswordException;
+import org.openbravo.authentication.ChangePasswordException;
 import org.openbravo.base.exception.OBException;
 import org.openbravo.base.secureApp.LoginUtils;
 import org.openbravo.dal.core.OBContext;
@@ -49,6 +52,7 @@ import com.etendoerp.advanced.security.utils.AdvancedSecurityUtils;
 @RunWith(MockitoJUnitRunner.class)
 public class AdvancedAuthenticationManagerTest {
 
+  private static final String SYSTEM_USER_ID = "100";
 
   @Spy
   @InjectMocks
@@ -87,25 +91,9 @@ public class AdvancedAuthenticationManagerTest {
    */
   @Test
   public void testDoAuthenticateShouldThrowAuthenticationExceptionForSystemUser() {
-    when(mockUser.getId()).thenReturn("100");
+    Throwable thrown = captureDoAuthenticateFailure(SYSTEM_USER_ID, null);
 
-    try (MockedStatic<OBContext> obContextMock = mockStatic(OBContext.class);
-         MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class);
-         MockedStatic<AdvancedSecurityUtils> securityUtilsMock = mockStatic(AdvancedSecurityUtils.class)) {
-
-      obContextMock.when(OBContext::getOBContext).thenReturn(obContext);
-      when(obContext.isAdminContext()).thenReturn(false);
-
-      obDalMock.when(OBDal::getInstance).thenReturn(obDal);
-      when(obDal.get(SystemInformation.class, Utility.SYSTEM_INFO_ID)).thenReturn(systemInfo);
-
-      securityUtilsMock.when(() -> AdvancedSecurityUtils.getUser(anyString())).thenReturn(mockUser);
-      securityUtilsMock.when(() -> AdvancedSecurityUtils.getAttemptsToBlockUser(any())).thenReturn(0);
-
-      assertThrows(AuthenticationException.class, () ->
-        authManager.doAuthenticate(request, response)
-      );
-    }
+    assertTrue(thrown instanceof AuthenticationException);
   }
 
   /**
@@ -209,5 +197,75 @@ public class AdvancedAuthenticationManagerTest {
     String result = (String) getUserNameMethod.invoke(authManager, request);
 
     assertEquals(Utility.TEST_USER, result);
+  }
+  /**
+   * Tests that an expired password reported while authenticating leaves {@code doAuthenticate}
+   * with its original type, so that {@code LoginHandler} can route the user to the mandatory
+   * password change form instead of showing a dead end error.
+   */
+  @Test
+  public void testDoAuthenticateKeepsExpiredPasswordExceptionType() {
+    AuthenticationExpirationPasswordException expired = new AuthenticationExpirationPasswordException(
+        "CPExpirationPassword");
+
+    assertSame(expired, captureDoAuthenticateFailure(Utility.TEST_USER_ID, expired));
+  }
+
+  /**
+   * Tests that a forced password change reported while authenticating leaves
+   * {@code doAuthenticate} with its original type, since {@code LoginHandler} routes it through
+   * the same password change flow as an expired password.
+   */
+  @Test
+  public void testDoAuthenticateKeepsChangePasswordExceptionType() {
+    ChangePasswordException changePassword = new ChangePasswordException("CPUpdatePassword");
+
+    assertSame(changePassword, captureDoAuthenticateFailure(Utility.TEST_USER_ID, changePassword));
+  }
+
+  /**
+   * Runs {@code doAuthenticate} for the given user and returns the exception that escapes the
+   * method.
+   *
+   * <p>When an exception is supplied it is injected through {@link AdvancedSecurityUtils} rather
+   * than through the inherited {@code super.doAuthenticate()} that raises it in production: a
+   * {@code super} call is bound at compile time and cannot be stubbed on a spy. What is under test
+   * is the catch clause of {@code doAuthenticate}, which treats both origins alike.
+   *
+   * @param userId
+   *     the id of the user being authenticated
+   * @param toPropagate
+   *     the exception raised inside the body of {@code doAuthenticate}, or {@code null} to let the
+   *     inherited authentication fail on its own
+   * @return the exception thrown out of {@code doAuthenticate}
+   */
+  private Throwable captureDoAuthenticateFailure(String userId, RuntimeException toPropagate) {
+    when(mockUser.getId()).thenReturn(userId);
+
+    try (MockedStatic<OBContext> obContextMock = mockStatic(OBContext.class);
+         MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class);
+         MockedStatic<AdvancedSecurityUtils> securityUtilsMock = mockStatic(AdvancedSecurityUtils.class)) {
+
+      obContextMock.when(OBContext::getOBContext).thenReturn(obContext);
+      when(obContext.isAdminContext()).thenReturn(false);
+
+      obDalMock.when(OBDal::getInstance).thenReturn(obDal);
+      when(obDal.get(SystemInformation.class, Utility.SYSTEM_INFO_ID)).thenReturn(systemInfo);
+
+      securityUtilsMock.when(() -> AdvancedSecurityUtils.getUser(anyString())).thenReturn(mockUser);
+      securityUtilsMock.when(() -> AdvancedSecurityUtils.getAttemptsToBlockUser(any())).thenReturn(0);
+      if (toPropagate != null) {
+        securityUtilsMock.when(() -> AdvancedSecurityUtils.getDaysToPasswordExpirationPreference(any()))
+            .thenThrow(toPropagate);
+      }
+
+      try {
+        authManager.doAuthenticate(request, response);
+        fail("doAuthenticate must not authenticate this user");
+        return null;
+      } catch (Exception e) {
+        return e;
+      }
+    }
   }
 }
