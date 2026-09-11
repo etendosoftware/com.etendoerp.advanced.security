@@ -36,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.criterion.Restrictions;
 import org.openbravo.authentication.AuthenticationException;
+import org.openbravo.authentication.AuthenticationExpirationPasswordException;
+import org.openbravo.authentication.ChangePasswordException;
 import org.openbravo.authentication.basic.DefaultAuthenticationManager;
 import org.openbravo.base.exception.OBException;
 import org.openbravo.base.secureApp.LoginUtils;
@@ -85,6 +87,10 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
         executePasswordResetForNewUsers(user);
       }
       return super.doAuthenticate(request, response);
+    } catch (AuthenticationExpirationPasswordException | ChangePasswordException e) {
+      // Rethrown as is so that LoginHandler can route the user to the mandatory password change
+      // flow. Wrapping it into a plain AuthenticationException locks the user out.
+      throw e;
     } catch (Exception e) {
       OBError errorMsg = new OBError();
       errorMsg.setType("error");
@@ -236,6 +242,10 @@ public class AdvancedAuthenticationManager extends DefaultAuthenticationManager 
               String.format(OBMessageUtils.messageBD("ETAS_Multiplelogin"), user.getUsername()));
         }
       }
+    } catch (AuthenticationExpirationPasswordException | ChangePasswordException e) {
+      // super.doAuthenticate() reports an expired password with these subtypes of
+      // AuthenticationException, which is itself an OBException: they must not be flattened.
+      throw e;
     } catch (OBException e) {
       throw new OBException(e.getMessage());
     }
